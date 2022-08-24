@@ -1,0 +1,7 @@
+ckeditor_mentions_notifications.main_menu:
+  title: 'Mentions Notifications'
+  description: 'Manage Mentions Notifications.'
+  route_name: ckeditor_mentions_notifications.config_form
+  weight: 100
+  parent: system.admin_config_system
+

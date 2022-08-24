@@ -1,0 +1,166 @@
+<?php
+
+use Drupal\comment\Entity\Comment;
+use Drupal\Core\Entity\EntityMalformedException;
+use Drupal\Core\Routing\RouteMatchInterface;
+use \Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\node\Entity\Node;
+
+/**
+ * Implements hook_help().
+ */
+function ckeditor_mentions_notifications_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the ckeditor_mentions_notifications module.
+    case 'help.page.ckeditor_mentions_notification':
+      $output = '';
+      $output .= '<h2>' . t('About') . '</h2>';
+      $output .= '<p>' . t('The CKEditor Mentions Notifications module will notify users mentioned in any CKEditor field.') . '</p>';
+      $output .= '<p>';
+      $output .= t('Visit the <a href=":project_link">Project page</a> on Drupal.org for more information.', [
+        ':project_link' => 'https://www.drupal.org/project/ckeditor_mentions_notifications',
+      ]);
+      $output .= '</p>';
+
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ckeditor_mentions_notifications_form_alter(&$form, FormStateInterface $form_state, $form_id)
+{
+  if ($form_id === 'user_form') {
+    $user_id = Drupal::currentUser()->id();
+    /** @var Drupal\user\UserData $user_data */
+    $user_data = Drupal::service('user.data');
+    $data = $user_data->get('ckeditor_mentions_notifications', $user_id, 'mentions_notifications_settings_key');
+    $notification_options = array(
+      'Enable' => t('Enable'),
+      'Disable' => t('Disable'),
+    );
+    $form['ckeditor_mentions_notifications_setting'] = array(
+      '#title' => t('Mentions Notifications'),
+      '#type' => 'radios',
+      '#description' => t('Enable or disable Mention notifications.'),
+      '#default_value' => is_null($data) ? $notification_options['Disable'] : $notification_options[$data],
+      '#options' => $notification_options,
+    );
+    $form['actions']['submit']['#submit'][] = 'ckeditor_mentions_notifications_form_user_profile_submit';
+  }
+}
+  /**
+   * Custom submit handler to save mention notification preference.
+   */
+  function ckeditor_mentions_notifications_form_user_profile_submit(&$form, FormStateInterface $form_state){
+    //\Drupal::logger("ckeditor_mentions_notifications")->notice(json_encode($form_state->getValue('ckeditor_mentions_notifications_setting')));
+    /** @var Drupal\user\UserData $user_data */
+    $user_data = Drupal::service('user.data');
+    $user_data->set('ckeditor_mentions_notifications', Drupal::currentUser()->id(), 'mentions_notifications_settings_key',
+      $form_state->getValue('ckeditor_mentions_notifications_setting'));
+    return $form;
+  }
+
+/**
+ * Implements hook_mail().
+ */
+function ckeditor_mentions_notifications_mail($key, &$message, $params) {
+  $options = array(
+    'langcode' => $message['langcode'],
+  );
+
+  switch ($key) {
+    case 'send_ckeditor_mentions_notifications':
+      $message['from'] = \Drupal::config('system.site')->get('mail');
+      $message['subject'] = $params['subject'];
+      $message['body'][] = $params['message'];
+      break;
+  }
+}
+
+/**
+ * Implements hook_token_info().
+ */
+function ckeditor_mentions_notifications_token_info(): array
+{
+  $info = [];
+
+  $info['types']['ckeditor_mentions_notifications'] = [
+    'name' => t('Ckeditor Mentions Notifications'),
+    'description' => t('Ckeditor Mentions Notifications Tokens.'),
+  ];
+
+  $info['tokens']['ckeditor_mentions_notifications']['comment_title'] = [
+    'name' => 'Comment Title',
+    'description' => t('This token is associated with comment title.')
+  ];
+  $info['tokens']['ckeditor_mentions_notifications']['node_title'] = [
+    'name' => 'Node Title',
+    'description' => t('This token is associated with node title.')
+  ];
+  $info['tokens']['ckeditor_mentions_notifications']['comment_url'] = [
+    'name' => 'Comment Url',
+    'description' => t('This token is associated with comment url.')
+  ];
+  $info['tokens']['ckeditor_mentions_notifications']['node_url'] = [
+    'name' => 'Node Url',
+    'description' => t('This token is associated with node url.')
+  ];
+  $info['tokens']['ckeditor_mentions_notifications']['comment_owner'] = [
+    'name' => 'Comment Owner',
+    'description' => t('This token is associated with comment owner.')
+  ];
+  $info['tokens']['ckeditor_mentions_notifications']['node_owner'] = [
+    'name' => 'Node Owner',
+    'description' => t('This token is associated with node owner.')
+  ];
+
+  return $info;
+}
+
+/**
+ * Implements hook_tokens().
+ * @throws EntityMalformedException
+ */
+function ckeditor_mentions_notifications_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) : array {
+  $replacements = [];
+  if ($type == 'ckeditor_mentions_notifications') {
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'comment_tile':
+          $comment = $data['comment'];
+          $replacements[$original] = $text ?? $comment->getTitle();
+          break;
+        case 'node_title':
+          $node = $data['node'];
+          $replacements[$original] = $text ?? $node->getTitle();
+          break;
+        case 'comment_url':
+          /** @var Comment $comment */
+          $comment = $data['comment'];
+          $replacements[$original] = $text ?? $comment->toUrl()->toString();
+          break;
+        case 'node_url':
+          /** @var Node $node */
+          $node = $data['node'];
+          $replacements[$original] = $text ?? $node->toUrl()->toString();
+          break;
+        case 'comment_owner':
+          /** @var Comment $comment */
+          $comment = $data['comment'];
+          $replacements[$original] = $text ?? $comment->getOwner()->getAccountName();
+          break;
+        case 'node_owner':
+          /** @var Node $node */
+          $node = $data['node'];
+          $replacements[$original] = $text ?? $node->getOwner()->getAccountName();
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  return $replacements;
+}

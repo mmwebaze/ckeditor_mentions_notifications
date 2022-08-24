@@ -1,0 +1,9 @@
+ckeditor_mentions_notifications.config_form:
+  path: '/admin/config/mentions_notifications'
+  defaults:
+    _form: 'Drupal\ckeditor_mentions_notifications\Form\CkeditorMentionsNotificationsConfigForm'
+    _title: 'Ckeditor Mentions Notifications'
+  requirements:
+    _permission: 'access administration pages'
+  options:
+    _admin_route: TRUE

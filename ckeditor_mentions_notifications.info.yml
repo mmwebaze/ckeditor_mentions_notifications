@@ -1,0 +1,7 @@
+name: ckeditor mentions notifications
+type: module
+description: 'Enables notifications for a mention made in ckeditor.'
+package: Custom
+core_version_requirement: ^9.4.5 || ^10
+dependencies:
+  - 'ckeditor_mentions:ckeditor_mentions'
