@@ -35,7 +35,7 @@ INSTALLATION
 * Install as you would normally install a contributed Drupal module. Visit
   https://www.drupal.org/docs/8/extending-drupal-8/installing-drupal-8-modules
   for further information.
-* Ensure that the CKEditor Mentions module is configured [Configure here](https://www.drupal.org/project/ckeditor_mentions) for the CKEditor of your choice
+* Ensure that the CKEditor Mentions module is configured. [Configure here](https://www.drupal.org/project/ckeditor_mentions) for the CKEditor of your choice
 
 CONFIGURATION
 -------------
