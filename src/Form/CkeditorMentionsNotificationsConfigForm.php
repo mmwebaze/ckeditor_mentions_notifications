@@ -29,7 +29,8 @@ class CkeditorMentionsNotificationsConfigForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array
+  {
     $config = $this->config('ckeditor_mentions_notification.settings');
     $form['general']['email_subject'] = [
       '#type' => 'textfield',

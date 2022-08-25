@@ -1,0 +1,2 @@
+mentions_notifications_email_subject: '[ckeditor_mentions_notifications:comment_owner] has mentioned you.'
+mentions_notifications_email_body: 'You have been mentioned here [comment:url].'

@@ -57,7 +57,8 @@ class NotificationMentionEventsSubscriber implements EventSubscriberInterface {
    * @return array
    *   The event names to listen for, and the methods that should be executed.
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array
+  {
     return [
       CKEditorEvents::MENTION_FIRST => 'initiateNotification',
     ];
@@ -91,10 +92,9 @@ class NotificationMentionEventsSubscriber implements EventSubscriberInterface {
         $params['message'] = $subject;
         $params['subject'] = $body;
         $result = $this->mailManager->mail('ckeditor_mentions_notifications', 'send_ckeditor_mentions_notifications', $email, 'en', $params, TRUE);
-        \Drupal::logger("ckeditor_mentions_notifications_event")->notice("Send notification out to : {$mentionedEntity->getAccountName()}");
-      }
-      else{
-        \Drupal::logger("ckeditor_mentions_notifications_event")->notice("Cannot notify out to : {$mentionedEntity->getAccountName()}");
+        if ($result['result'] != TRUE) {
+          \Drupal::logger("ckeditor_mentions_notifications")->notice("Unable to send a mentions notification out to : {$mentionedEntity->getAccountName()}");
+        }
       }
     }
   }
